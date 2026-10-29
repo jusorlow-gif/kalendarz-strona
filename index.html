@@ -1,0 +1,690 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Kalendarz MEETRÓWKI</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='10' width='56' height='50' rx='10' fill='%23731330'/%3E%3Crect x='4' y='10' width='56' height='14' rx='7' fill='%23561024'/%3E%3Crect x='17' y='4' width='6' height='14' rx='3' fill='%23561024'/%3E%3Crect x='41' y='4' width='6' height='14' rx='3' fill='%23561024'/%3E%3Ctext x='32' y='53' text-anchor='middle' font-family='Inter,Arial,sans-serif' font-weight='600' font-size='26' fill='%23fff'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+/* Layout: tablica pracowni — po lewej szuflada z klockami, po prawej tydzień (albo miesiąc) jak pola na arkuszu */
+:root {
+  --bg: #F6F4F2; --surface: #FFFFFF; --sand: #F2ECE5; --line: #E4E0DC;
+  --text: #4A3A32; --head: #33251F; --muted: #7A6A61;
+  --accent: #731330; --accent-ink: #FFFFFF; --green: #1B4634;
+  --today: #F7E9ED; --drop: #E9F1EC;
+  --c-praca-bg: #F3E3E7; --c-praca-fg: #731330;
+  --c-termin-bg: #731330; --c-termin-fg: #FFFFFF;
+  --c-obietnica-bg: #F6EBD6; --c-obietnica-fg: #6E4B10; --c-obietnica-line: #C9A15A;
+  --c-ruch-bg: #DDEBE3; --c-ruch-fg: #1B4634;
+  --c-ludzie-bg: #DFEBEC; --c-ludzie-fg: #20535A;
+  --c-siebie-bg: #ECE3EE; --c-siebie-fg: #5E3F66;
+  --c-dom-bg: #ECE7E2; --c-dom-fg: #5A4A40;
+  --c-ustalic-bg: #E3E8F3; --c-ustalic-fg: #2E4372; --c-ustalic-line: #7F95C4;
+  --c-google-fg: #3B5B8C; --c-google-line: #A9BCDB;
+  --shadow: 0 10px 30px rgba(51, 37, 31, .18);
+  --serif: 'Lora', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+/* zawsze jasny, beżowy (jej wybór 29.10) — ciemny wariant wyłączony */
+@media not all { :root:not([data-theme="light"]) {
+  --bg: #1C1715; --surface: #25201D; --sand: #2B2421; --line: #3A322E;
+  --text: #E3D9D2; --head: #F4ECE6; --muted: #A3958C;
+  --accent: #E595AB; --accent-ink: #2A0D16; --green: #8CC7A9;
+  --today: #3A2028; --drop: #1E3329;
+  --c-praca-bg: #3A1821; --c-praca-fg: #F2BCCB;
+  --c-termin-bg: #A0284B; --c-termin-fg: #FFFFFF;
+  --c-obietnica-bg: #382D17; --c-obietnica-fg: #EBCB8C; --c-obietnica-line: #8C6E36;
+  --c-ruch-bg: #183129; --c-ruch-fg: #A9D7BF;
+  --c-ludzie-bg: #172F32; --c-ludzie-fg: #A6D3D6;
+  --c-siebie-bg: #2E2233; --c-siebie-fg: #DABFE3;
+  --c-dom-bg: #2D2622; --c-dom-fg: #D8CBBF;
+  --c-ustalic-bg: #1E2638; --c-ustalic-fg: #B5C6EC; --c-ustalic-line: #5A6F9E;
+  --c-google-fg: #AFC4E8; --c-google-line: #4A5F85;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #1C1715; --surface: #25201D; --sand: #2B2421; --line: #3A322E;
+  --text: #E3D9D2; --head: #F4ECE6; --muted: #A3958C;
+  --accent: #E595AB; --accent-ink: #2A0D16; --green: #8CC7A9;
+  --today: #3A2028; --drop: #1E3329;
+  --c-praca-bg: #3A1821; --c-praca-fg: #F2BCCB;
+  --c-termin-bg: #A0284B; --c-termin-fg: #FFFFFF;
+  --c-obietnica-bg: #382D17; --c-obietnica-fg: #EBCB8C; --c-obietnica-line: #8C6E36;
+  --c-ruch-bg: #183129; --c-ruch-fg: #A9D7BF;
+  --c-ludzie-bg: #172F32; --c-ludzie-fg: #A6D3D6;
+  --c-siebie-bg: #2E2233; --c-siebie-fg: #DABFE3;
+  --c-dom-bg: #2D2622; --c-dom-fg: #D8CBBF;
+  --c-ustalic-bg: #1E2638; --c-ustalic-fg: #B5C6EC; --c-ustalic-line: #5A6F9E;
+  --c-google-fg: #AFC4E8; --c-google-line: #4A5F85;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.45; }
+[hidden] { display: none !important; }
+.wrap { max-width: 1480px; margin: 0 auto; padding: 24px 20px 48px; display: grid; gap: 20px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* nagłówek */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.eyebrow { font-size: 11px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36px); line-height: 1.15; color: var(--head); margin: 4px 0 0; text-wrap: balance; }
+.summary { color: var(--muted); margin-top: 6px; }
+.summary b { color: var(--head); font-weight: 500; }
+.sync { font-size: 12px; color: var(--muted); margin-left: 6px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; line-height: 1.2; }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn--icon { width: 36px; height: 36px; padding: 0; display: inline-grid; place-items: center; font-size: 16px; }
+.btn--main { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn--main:hover { color: var(--accent-ink); filter: brightness(1.08); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: none; padding: 7px 14px; }
+.seg button[aria-pressed="true"] { background: var(--head); color: var(--bg); }
+
+.notice { background: var(--c-obietnica-bg); color: var(--c-obietnica-fg); border-radius: 10px; padding: 10px 14px; }
+
+/* połączenie z GitHubem */
+.connect { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 12px; max-width: 560px; }
+.connect h2 { font-family: var(--serif); font-weight: 400; font-size: 22px; color: var(--head); margin: 0; }
+.connect p { margin: 0; color: var(--muted); }
+.connect input { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 9px 10px; width: 100%; }
+.connect .err { color: var(--accent); }
+
+/* główny układ */
+.main { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 20px; align-items: start; }
+.tray { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 18px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); max-height: calc(100vh - 24px); overflow: auto; }
+.tray h2 { font-family: var(--serif); font-weight: 400; font-size: 20px; color: var(--head); margin: 0; }
+.tray .hint { color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }
+.group { display: grid; gap: 6px; }
+.group h3 { margin: 0; font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.group h3 .sw { width: 10px; height: 10px; border-radius: 3px; }
+.droplist { display: grid; gap: 6px; min-height: 8px; border-radius: 10px; transition: background .15s; }
+.drop-hover { background: var(--drop) !important; box-shadow: inset 0 0 0 2px var(--green); }
+.empty { color: var(--muted); font-size: 12.5px; font-style: italic; }
+
+/* tydzień */
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px 8px; display: grid; grid-template-rows: auto 1fr auto; gap: 8px; min-height: 340px; min-width: 0; }
+.day.weekend { background: var(--sand); }
+.day.today { background: var(--today); border-color: var(--accent); }
+.day.past .dhead { opacity: .6; }
+.dhead { display: flex; align-items: baseline; gap: 6px; padding: 0 2px; }
+.dname { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.dnum { font-family: var(--serif); font-size: 22px; color: var(--head); line-height: 1; font-variant-numeric: tabular-nums; }
+.pill { margin-left: auto; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 2px 7px; }
+.day .droplist { align-content: start; padding: 2px; }
+.add { border: 1px dashed var(--line); background: none; border-radius: 8px; padding: 5px; color: var(--muted); font-size: 12.5px; }
+.add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* miesiąc */
+.monthwrap { overflow-x: auto; }
+.month { display: grid; grid-template-columns: repeat(7, minmax(92px, 1fr)); gap: 6px; min-width: 680px; }
+.mhead { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 4px; }
+.mday { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 6px; min-height: 112px; display: grid; grid-template-rows: auto 1fr; gap: 4px; min-width: 0; }
+.mday.weekend { background: var(--sand); }
+.mday.out { opacity: .45; }
+.mday.today { background: var(--today); border-color: var(--accent); }
+.mday .dnum { font-size: 16px; }
+.mday .droplist { gap: 3px; align-content: start; }
+.mday .chip { font-size: 11.5px; padding: 3px 6px; }
+.mday .chip .tick { display: none; }
+
+/* klocki */
+.chip { display: flex; align-items: flex-start; gap: 6px; width: 100%; text-align: left; border: 1px solid transparent; border-radius: 8px; padding: 6px 8px; font-size: 12.5px; line-height: 1.3; touch-action: manipulation; user-select: none; -webkit-user-select: none; position: relative; }
+.chip .t { min-width: 0; overflow-wrap: anywhere; }
+.chip .tick { flex: none; width: 15px; height: 15px; margin-top: 1px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font-size: 10px; line-height: 1; background: none; padding: 0; opacity: .8; }
+.chip.done { opacity: .5; }
+.chip.done .t { text-decoration: line-through; }
+.chip .note { display: block; font-size: 11px; opacity: .8; margin-top: 2px; }
+.chip .tpl { margin-left: auto; flex: none; font-size: 10px; opacity: .7; }
+.chip:hover { filter: brightness(.97); }
+.c-praca { background: var(--c-praca-bg); color: var(--c-praca-fg); }
+.c-termin { background: var(--c-termin-bg); color: var(--c-termin-fg); font-weight: 600; }
+.c-obietnica { background: var(--c-obietnica-bg); color: var(--c-obietnica-fg); border-color: var(--c-obietnica-line); }
+.c-ruch { background: var(--c-ruch-bg); color: var(--c-ruch-fg); }
+.c-ludzie { background: var(--c-ludzie-bg); color: var(--c-ludzie-fg); }
+.c-siebie { background: var(--c-siebie-bg); color: var(--c-siebie-fg); }
+.c-dom { background: var(--c-dom-bg); color: var(--c-dom-fg); }
+.c-ustalic { background: var(--c-ustalic-bg); color: var(--c-ustalic-fg); border: 1px dashed var(--c-ustalic-line); }
+/* kolory od 29.10: ważne · projekty · social · asystent · przyjemności · dom */
+.c-wazne { background: #731330; color: #FFFFFF; font-weight: 600; }
+.c-projekty { background: #F3E3E7; color: #731330; }
+.c-social { background: #E2EAF5; color: #2E4A72; }
+.c-asystent { background: #ECEAE7; color: #5F5650; }
+.c-przyjemnosci { background: #DDEBE3; color: #1B4634; }
+/* pomysł – można przełożyć: blady, przerywana ramka */
+.chip.later { opacity: .72; border: 1px dashed currentColor; }
+/* wpisy z Kalendarza Google: tylko do wglądu */
+.gchip { display: block; width: 100%; text-align: left; border: 1px solid var(--c-google-line); border-radius: 8px; padding: 5px 8px; font-size: 12px; line-height: 1.3; background: none; color: var(--c-google-fg); overflow-wrap: anywhere; }
+.gchip .gt { font-variant-numeric: tabular-nums; font-weight: 600; margin-right: 4px; }
+.mday .gchip { font-size: 11px; padding: 3px 6px; }
+.chip.dragging { opacity: .3; }
+/* karty z boku: informacje do wglądu, bez odhaczania */
+.icard { display: grid; gap: 4px; width: 100%; text-align: left; border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 8px; padding: 8px 10px; background: var(--bg); color: var(--text); }
+.icard:hover { border-color: var(--accent); }
+.icard b { font-weight: 600; font-size: 13px; color: var(--head); overflow-wrap: anywhere; }
+.icard span { font-size: 11.5px; color: var(--muted); white-space: pre-line; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.icard.c-dom { border-left-color: var(--c-dom-fg); } .icard.c-ludzie { border-left-color: var(--c-ludzie-fg); }
+.icard.c-praca { border-left-color: var(--c-praca-fg); } .icard.c-siebie { border-left-color: var(--c-siebie-fg); }
+.icard.c-obietnica, .icard.c-termin, .icard.c-ruch, .icard.c-ustalic { border-left-color: var(--accent); }
+.icard[class*="c-"] { background: var(--bg); color: var(--text); font-weight: 400; border-style: solid; }
+.ghost { position: fixed; z-index: 50; pointer-events: none; box-shadow: var(--shadow); transform: rotate(-2deg); width: 200px; }
+
+/* edycja */
+.overlay { position: fixed; inset: 0; background: rgba(28, 23, 21, .45); display: grid; place-items: center; padding: 16px; z-index: 40; }
+.sheet { background: var(--surface); border-radius: 16px; width: min(460px, 100%); padding: 20px; display: grid; gap: 14px; box-shadow: var(--shadow); max-height: calc(100vh - 32px); overflow: auto; }
+.sheet h2 { font-family: var(--serif); font-weight: 400; font-size: 22px; color: var(--head); margin: 0; }
+.field { display: grid; gap: 4px; }
+.field label, .lab { font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.field input, .field select, .field textarea { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 8px 10px; width: 100%; }
+.field textarea { min-height: 70px; resize: vertical; }
+.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.row label { display: flex; gap: 6px; align-items: center; font-size: 13.5px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+.actions .r { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn--danger { color: var(--accent); }
+.toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 20px); transform: translateX(-50%); background: var(--head); color: var(--bg); padding: 8px 16px; border-radius: 999px; z-index: 60; font-size: 13px; }
+
+@media (max-width: 1100px) {
+  .main { grid-template-columns: minmax(0, 1fr); }
+  .tray { position: static; max-height: none; order: 2; }
+}
+@media (max-width: 860px) {
+  .week { grid-template-columns: minmax(0, 1fr); }
+  .day { min-height: 0; }
+  .wrap { padding: 16px 16px 40px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .ghost { transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">MEETRÓWKA · kalendarz Justyny</div>
+      <h1 id="range">Kalendarz</h1>
+      <div class="summary"><span id="summary">Wczytuję klocki…</span><span class="sync" id="sync"></span></div>
+    </div>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Widok">
+        <button type="button" id="v-week" aria-pressed="true">Tydzień</button>
+        <button type="button" id="v-month" aria-pressed="false">Miesiąc</button>
+      </div>
+      <button type="button" class="btn btn--icon" id="prev" aria-label="Wcześniej">‹</button>
+      <button type="button" class="btn" id="today">Dziś</button>
+      <button type="button" class="btn btn--icon" id="next" aria-label="Później">›</button>
+      <button type="button" class="btn btn--main" id="new">+ Nowy klocek</button>
+    </div>
+  </header>
+  <div class="notice" id="notice" hidden></div>
+  <form class="connect" id="connect" hidden autocomplete="off">
+    <h2>Połącz kalendarz</h2>
+    <p>Wklej klucz GitHub z pliku „klucz GitHub Kalendarz.txt” na dysku D. Zapamiętam go tylko w tej przeglądarce.</p>
+    <input id="c-token" type="password" placeholder="github_pat_…" aria-label="Klucz GitHub" required>
+    <p class="err" id="c-err" hidden></p>
+    <div><button type="submit" class="btn btn--main">Połącz</button></div>
+  </form>
+  <div class="main" id="mainview">
+    <aside class="tray" id="tray" aria-label="Klocki do zaplanowania"></aside>
+    <section id="cal" aria-label="Kalendarz"></section>
+  </div>
+</div>
+<div class="overlay" id="overlay" hidden>
+  <form class="sheet" id="sheet" autocomplete="off">
+    <h2 id="sheet-title">Klocek</h2>
+    <div class="field"><label for="f-title">Co</label><input id="f-title" required maxlength="140"></div>
+    <div class="row">
+      <div class="field" style="flex:1 1 160px"><label for="f-cat">Rodzaj</label><select id="f-cat"></select></div>
+      <div class="field" style="flex:1 1 150px"><label for="f-date">Dzień</label><input id="f-date" type="date"></div>
+    </div>
+    <div class="field"><label for="f-note">Notatka</label><textarea id="f-note" maxlength="3000" placeholder="np. godzina, z kim, co obiecałam"></textarea></div>
+    <div class="row">
+      <label><input type="checkbox" id="f-done"> Zrobione</label>
+      <label><input type="checkbox" id="f-later"> Pomysł – można przełożyć</label>
+      <label><input type="checkbox" id="f-tpl"> Stały klocek (przeciągam kopie)</label>
+      <label><input type="checkbox" id="f-info"> Karta z boku (info, bez odhaczania)</label>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn btn--danger" id="f-del">Usuń</button>
+      <div class="r">
+        <button type="button" class="btn" id="f-dup">Duplikuj</button>
+        <button type="button" class="btn" id="f-cancel">Anuluj</button>
+        <button type="submit" class="btn btn--main">Zapisz</button>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const CATS = {
+    wazne:        { label: 'Ważne' },
+    projekty:     { label: 'Projekty i praca' },
+    social:       { label: 'Social media i marketing' },
+    asystent:     { label: '🤖 Asystent' },
+    przyjemnosci: { label: 'Przyjemności' },
+    dom:          { label: 'Dom i zdrowie' }
+  };
+  // stare rodzaje (sprzed 29.10) pokazuję w nowych kolorach
+  const LEGACY = { termin: 'wazne', obietnica: 'wazne', praca: 'projekty', ustalic: 'projekty', ludzie: 'przyjemnosci', ruch: 'przyjemnosci', siebie: 'przyjemnosci' };
+  const catOf = b => CATS[b.cat] ? b.cat : (LEGACY[b.cat] || 'projekty');
+  const DNI = ['pon', 'wt', 'śr', 'czw', 'pt', 'sob', 'nd'];
+  const MIES = ['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
+  const MIES_D = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+
+  const $ = id => document.getElementById(id);
+  const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+  const monday = d => addDays(new Date(d.getFullYear(), d.getMonth(), d.getDate()), -((d.getDay() + 6) % 7));
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  const store = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } };
+
+  let blocks = new Map();
+  let gevents = [];
+  let loaded = false;
+  let view = store('kal-view') === 'month' ? 'month' : 'week';
+  let anchor = new Date();
+
+  // ---------- dane: prywatne repozytorium GitHub ----------
+  // Cały kalendarz to jeden plik data/blocks.json. Zmiany zbieram w kolejce i zapisuję paczką;
+  // gdy w międzyczasie ktoś inny (np. asystent) zapisał plik, pobieram nową wersję i nakładam na nią swoje zmiany.
+  const REPO = 'jusorlow-gif/kalendarz';
+  const API = 'https://api.github.com/repos/' + REPO + '/contents/';
+  const TKEY = 'kal-gh-token';
+  let token = store(TKEY);
+  let sha = null, pending = [], saving = false, saveT = null;
+
+  const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, '')), c => c.charCodeAt(0)));
+  const b64enc = s => { const bytes = new TextEncoder().encode(s); let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(bin); };
+  async function gh(path, opts) {
+    const r = await fetch(API + path, Object.assign({ cache: 'no-store' }, opts, { headers: Object.assign({ Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' }, opts && opts.headers) }));
+    if (r.status === 401 || r.status === 403) throw Object.assign(new Error('auth'), { code: 'auth' });
+    return r;
+  }
+  async function fetchBlocks() {
+    const r = await gh('data/blocks.json');
+    if (!r.ok) throw new Error('read ' + r.status);
+    const j = await r.json();
+    const data = JSON.parse(b64dec(j.content));
+    const m = new Map();
+    for (const b of data.blocks || []) m.set(b.id, b);
+    return { sha: j.sha, map: m };
+  }
+  async function fetchGoogle() {
+    try {
+      const r = await gh('data/google.json');
+      if (!r.ok) return;
+      const j = await r.json();
+      gevents = (JSON.parse(b64dec(j.content)).events || []);
+    } catch (e) { if (e.code === 'auth') throw e; }
+  }
+  function applyOps(m, ops) {
+    for (const op of ops) {
+      if (op.type === 'del') m.delete(op.id);
+      else m.set(op.id, Object.assign({}, op.type === 'patch' ? (m.get(op.id) || {}) : {}, op.data, { id: op.id }));
+    }
+    return m;
+  }
+  function setSync(t) { $('sync').textContent = t; }
+  function scheduleSave() { clearTimeout(saveT); setSync('· zapisuję…'); saveT = setTimeout(flush, 1200); }
+  async function flush() {
+    if (saving || !pending.length) return;
+    saving = true;
+    const ops = pending.slice();
+    try {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const body = { updated: Date.now(), blocks: [...blocks.values()] };
+        const r = await gh('data/blocks.json', { method: 'PUT', body: JSON.stringify({ message: 'zapis z kalendarza', content: b64enc(JSON.stringify(body, null, 1)), sha }) });
+        if (r.ok) { sha = (await r.json()).content.sha; pending.splice(0, ops.length); setSync('· zapisano ✓'); break; }
+        if (r.status === 409 || r.status === 422) {
+          // plik zmienił się w międzyczasie — biorę nową wersję i nakładam moje zmiany
+          const fresh = await fetchBlocks(); sha = fresh.sha; blocks = applyOps(fresh.map, pending); render(); continue;
+        }
+        throw new Error('write ' + r.status);
+      }
+    } catch (e) {
+      setSync('· nie zapisało się');
+      toast(e.code === 'auth' ? 'Klucz GitHub nie działa. Połącz kalendarz jeszcze raz.' : 'Nie zapisało się. Sprawdź internet — spróbuję ponownie.');
+      if (e.code === 'auth') { saving = false; return showConnect('Klucz wygasł albo jest błędny.'); }
+      setTimeout(scheduleSave, 15000);
+    }
+    saving = false;
+    if (pending.length) scheduleSave();
+  }
+  async function refresh() {
+    if (!token || saving || pending.length || (drag && drag.active) || !$('overlay').hidden) return;
+    try {
+      const fresh = await fetchBlocks();
+      await fetchGoogle();
+      if (fresh.sha !== sha || !loaded) { sha = fresh.sha; blocks = fresh.map; loaded = true; render(); }
+      setSync('· zapisano ✓');
+    } catch (e) {
+      if (e.code === 'auth') showConnect('Klucz wygasł albo jest błędny.');
+      else setSync('· brak połączenia');
+    }
+  }
+  window.addEventListener('beforeunload', ev => { if (pending.length) { ev.preventDefault(); ev.returnValue = ''; } });
+
+  function write(id, data, isNew) {
+    const prev = blocks.get(id);
+    blocks.set(id, Object.assign({}, prev || {}, data, { id }));
+    pending.push(isNew ? { type: 'set', id, data: blocks.get(id) } : { type: 'patch', id, data });
+    render(); scheduleSave();
+  }
+  function remove(id) {
+    blocks.delete(id); pending.push({ type: 'del', id });
+    render(); scheduleSave();
+  }
+  const newId = () => 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  function create(data) {
+    const id = newId();
+    write(id, Object.assign({ title: '', cat: 'praca', date: null, note: '', done: false, tpl: false, order: Date.now() }, data), true);
+    return id;
+  }
+
+  // ---------- render ----------
+  function sorted(list) { return list.sort((a, b) => (a.done - b.done) || ((catOf(a) === 'wazne') ? -1 : 0) - ((catOf(b) === 'wazne') ? -1 : 0) || (!!a.later - !!b.later) || (a.order || 0) - (b.order || 0)); }
+  function byDate() {
+    const m = new Map();
+    for (const b of blocks.values()) if (b.date && !b.info) { if (!m.has(b.date)) m.set(b.date, []); m.get(b.date).push(b); }
+    for (const l of m.values()) sorted(l);
+    return m;
+  }
+  function gByDate() {
+    const m = new Map();
+    for (const g of gevents) { if (!m.has(g.date)) m.set(g.date, []); m.get(g.date).push(g); }
+    for (const l of m.values()) l.sort((a, b) => (a.time || '') < (b.time || '') ? -1 : 1);
+    return m;
+  }
+  function chip(b) {
+    const c = el('div', 'chip c-' + catOf(b) + (b.later ? ' later' : '') + (b.done ? ' done' : ''));
+    c.dataset.id = b.id; c.tabIndex = 0; c.setAttribute('role', 'button');
+    c.setAttribute('aria-label', (b.title || 'Klocek') + (b.done ? ', zrobione' : '') + '. Otwórz, żeby edytować.');
+    if (!b.tpl) {
+      const t = el('button', 'tick', b.done ? '✓' : '');
+      t.type = 'button'; t.setAttribute('aria-label', b.done ? 'Oznacz jako niezrobione' : 'Oznacz jako zrobione');
+      t.addEventListener('click', ev => { ev.stopPropagation(); write(b.id, { done: !b.done }); });
+      t.addEventListener('pointerdown', ev => ev.stopPropagation());
+      c.append(t);
+    }
+    const tx = el('span', 't', (b.later ? '💭 ' : '') + (b.title || 'Bez nazwy'));
+    c.append(tx);
+    if (b.tpl) c.append(el('span', 'tpl', '⧉'));
+    return c;
+  }
+  function gchip(g) {
+    const c = el('div', 'gchip');
+    c.title = 'Z Kalendarza Google' + (g.where ? ' · ' + g.where : '');
+    // godzina z Google to tylko pora powiadomienia w telefonie — nie pokazuję jej; prawdziwą godzinę wpisuje w tytule
+    c.append(document.createTextNode(g.title || 'Wydarzenie'));
+    return c;
+  }
+  function fillList(list, items, gitems) {
+    for (const g of gitems || []) list.append(gchip(g));
+    for (const b of items) list.append(chip(b));
+  }
+  function renderWeek(root, map, gmap) {
+    const start = monday(anchor), todayIso = iso(new Date());
+    const g = el('div', 'week');
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(start, i), key = iso(d);
+      const day = el('div', 'day' + (i > 4 ? ' weekend' : '') + (key === todayIso ? ' today' : '') + (key < todayIso ? ' past' : ''));
+      const h = el('div', 'dhead');
+      h.append(el('span', 'dname', DNI[i]), el('span', 'dnum', String(d.getDate())));
+      if (key === todayIso) h.append(el('span', 'pill', 'Dziś'));
+      const list = el('div', 'droplist'); list.dataset.drop = key;
+      fillList(list, map.get(key) || [], gmap.get(key));
+      const add = el('button', 'add', '+ dodaj'); add.type = 'button';
+      add.setAttribute('aria-label', 'Dodaj klocek na ' + DNI[i] + ' ' + d.getDate() + ' ' + MIES_D[d.getMonth()]);
+      add.addEventListener('click', () => openEditor(null, { date: key }));
+      day.append(h, list, add);
+      g.append(day);
+    }
+    root.append(g);
+    const end = addDays(start, 6);
+    $('range').textContent = start.getMonth() === end.getMonth()
+      ? start.getDate() + '–' + end.getDate() + ' ' + MIES_D[end.getMonth()] + ' ' + end.getFullYear()
+      : start.getDate() + ' ' + MIES_D[start.getMonth()] + ' – ' + end.getDate() + ' ' + MIES_D[end.getMonth()] + ' ' + end.getFullYear();
+  }
+  function renderMonth(root, map, gmap) {
+    const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+    const start = monday(first), todayIso = iso(new Date());
+    const wrap = el('div', 'monthwrap'), g = el('div', 'month');
+    DNI.forEach(n => g.append(el('div', 'mhead', n)));
+    const last = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+    const weeks = Math.ceil((((first.getDay() + 6) % 7) + last.getDate()) / 7);
+    for (let i = 0; i < weeks * 7; i++) {
+      const d = addDays(start, i), key = iso(d), wd = i % 7;
+      const cell = el('div', 'mday' + (wd > 4 ? ' weekend' : '') + (d.getMonth() !== anchor.getMonth() ? ' out' : '') + (key === todayIso ? ' today' : ''));
+      const h = el('div', 'dhead'); h.append(el('span', 'dnum', String(d.getDate())));
+      if (key === todayIso) h.append(el('span', 'pill', 'Dziś'));
+      h.addEventListener('dblclick', () => openEditor(null, { date: key }));
+      const list = el('div', 'droplist'); list.dataset.drop = key;
+      fillList(list, map.get(key) || [], gmap.get(key));
+      cell.append(h, list); g.append(cell);
+    }
+    wrap.append(g); root.append(wrap);
+    $('range').textContent = MIES[anchor.getMonth()].replace(/^./, c => c.toUpperCase()) + ' ' + anchor.getFullYear();
+  }
+  function renderTray() {
+    const tray = $('tray'); tray.replaceChildren();
+    const head = el('div'); head.append(el('h2', null, 'Klocki'), el('p', 'hint', 'Przeciągnij klocek na dzień. Klocek z dnia odłożysz tutaj z powrotem. Kliknij, żeby edytować.'));
+    tray.append(head);
+    if (!loaded) { tray.append(el('p', 'empty', 'Wczytuję klocki…')); return; }
+    const infos = [...blocks.values()].filter(b => b.info).sort((a, b) => (a.order || 0) - (b.order || 0));
+    if (infos.length) {
+      const ig = el('div', 'group');
+      ig.append(el('h3', null, '📌 Z boku · do wglądu'));
+      for (const b of infos) {
+        const c = el('button', 'icard c-' + catOf(b));
+        c.type = 'button';
+        c.append(el('b', null, b.title || 'Bez nazwy'));
+        if (b.note) c.append(el('span', null, b.note));
+        c.addEventListener('click', () => openEditor(b.id));
+        ig.append(c);
+      }
+      tray.append(ig);
+    }
+    const loose = [...blocks.values()].filter(b => !b.date && !b.tpl && !b.info);
+    const tpls = [...blocks.values()].filter(b => b.tpl);
+    const box = el('div', 'droplist'); box.dataset.drop = '';
+    box.style.gap = '16px'; box.style.padding = '2px';
+    let any = false;
+    for (const k of Object.keys(CATS)) {
+      const items = sorted(loose.filter(b => catOf(b) === k));
+      if (!items.length) continue;
+      any = true;
+      const g = el('div', 'group');
+      const h = el('h3'); const sw = el('span', 'sw c-' + k); h.append(sw, document.createTextNode(CATS[k].label));
+      g.append(h); items.forEach(b => g.append(chip(b)));
+      box.append(g);
+    }
+    if (!any) box.append(el('p', 'empty', 'Wszystko zaplanowane. Nowy klocek dodasz przyciskiem „+ Nowy klocek”.'));
+    tray.append(box);
+    const tg = el('div', 'group');
+    tg.append(el('h3', null, 'Stałe klocki · przeciągnij kopię'));
+    if (tpls.length) sorted(tpls).forEach(b => tg.append(chip(b)));
+    else tg.append(el('p', 'empty', 'Tu trafią zajęcia, które powtarzasz, np. joga.'));
+    tray.append(tg);
+  }
+  function renderSummary() {
+    const s = $('summary');
+    if (!loaded) { s.textContent = 'Wczytuję klocki…'; return; }
+    const start = monday(new Date()), keys = new Set([...Array(7)].map((_, i) => iso(addDays(start, i))));
+    const wk = [...blocks.values()].filter(b => b.date && !b.info && keys.has(b.date) && catOf(b) !== 'wazne');
+    const done = wk.filter(b => b.done).length;
+    const todayIso = iso(new Date());
+    const next = [...blocks.values()].filter(b => catOf(b) === 'wazne' && b.date && b.date >= todayIso && !b.done).sort((a, b) => a.date < b.date ? -1 : 1)[0];
+    const promises = [...blocks.values()].filter(b => catOf(b) === 'wazne' && !b.done && b.date && b.date < todayIso).length;
+    s.replaceChildren();
+    s.append('Ten tydzień: ', el('b', null, done + ' z ' + wk.length), ' zrobione');
+    if (next) {
+      const days = Math.round((parse(next.date) - parse(todayIso)) / 864e5);
+      s.append(' · najbliższe ważne: ', el('b', null, next.title), ' ' + (days === 0 ? 'dziś' : days === 1 ? 'jutro' : 'za ' + days + ' dni'));
+    }
+    if (promises) s.append(' · zaległe ważne: ', el('b', null, String(promises)));
+  }
+  function render() {
+    const cal = $('cal'); cal.replaceChildren();
+    const map = byDate(), gmap = gByDate();
+    if (view === 'week') renderWeek(cal, map, gmap); else renderMonth(cal, map, gmap);
+    renderTray(); renderSummary();
+    $('v-week').setAttribute('aria-pressed', view === 'week');
+    $('v-month').setAttribute('aria-pressed', view === 'month');
+  }
+
+  // ---------- przeciąganie (mysz i dotyk) ----------
+  let drag = null, justDragged = false, hoverEl = null;
+  function startDrag() {
+    const src = drag.el, r = src.getBoundingClientRect();
+    drag.ghost = src.cloneNode(true); drag.ghost.classList.add('ghost');
+    drag.ghost.style.width = Math.min(r.width, 240) + 'px';
+    drag.offX = drag.x - r.left; drag.offY = drag.y - r.top;
+    document.body.append(drag.ghost); src.classList.add('dragging');
+    drag.active = true; moveGhost(drag.x, drag.y);
+  }
+  function moveGhost(x, y) {
+    drag.ghost.style.left = (x - drag.offX) + 'px'; drag.ghost.style.top = (y - drag.offY) + 'px';
+    const t = document.elementFromPoint(x, y), target = t && t.closest('[data-drop]');
+    if (target !== hoverEl) { hoverEl && hoverEl.classList.remove('drop-hover'); hoverEl = target; hoverEl && hoverEl.classList.add('drop-hover'); }
+  }
+  function endDrag(cancel) {
+    if (!drag) return;
+    clearTimeout(drag.timer);
+    if (drag.active) {
+      drag.ghost.remove(); drag.el.classList.remove('dragging');
+      hoverEl && hoverEl.classList.remove('drop-hover');
+      if (!cancel && hoverEl) {
+        const b = blocks.get(drag.id), date = hoverEl.dataset.drop || null;
+        if (b) {
+          if (b.tpl) { if (date) { create({ title: b.title, cat: b.cat, note: b.note || '', date }); toast('Dodano: ' + b.title); } }
+          else if (b.date !== date) write(b.id, { date, order: Date.now() });
+        }
+      }
+      justDragged = true; setTimeout(() => { justDragged = false; }, 50);
+    }
+    hoverEl = null; drag = null;
+  }
+  document.addEventListener('pointerdown', ev => {
+    const c = ev.target.closest('.chip'); if (!c || c.classList.contains('ghost') || ev.button > 0) return;
+    drag = { id: c.dataset.id, el: c, x: ev.clientX, y: ev.clientY, active: false, touch: ev.pointerType !== 'mouse' };
+    if (drag.touch) drag.timer = setTimeout(() => { if (drag && !drag.active) { startDrag(); navigator.vibrate && navigator.vibrate(15); } }, 280);
+  });
+  document.addEventListener('pointermove', ev => {
+    if (!drag) return;
+    const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+    if (!drag.active) {
+      if (Math.hypot(dx, dy) > 6) {
+        if (drag.touch) { clearTimeout(drag.timer); drag = null; return; }
+        startDrag();
+      } else return;
+    }
+    moveGhost(ev.clientX, ev.clientY);
+  });
+  document.addEventListener('touchmove', ev => { if (drag && drag.active) ev.preventDefault(); }, { passive: false });
+  document.addEventListener('pointerup', () => endDrag(false));
+  document.addEventListener('pointercancel', () => { if (drag && drag.active) return; endDrag(true); });
+  document.addEventListener('contextmenu', ev => { if (drag && drag.active) ev.preventDefault(); });
+  document.addEventListener('click', ev => {
+    const c = ev.target.closest('.chip'); if (!c || justDragged) return;
+    openEditor(c.dataset.id);
+  });
+  document.addEventListener('keydown', ev => {
+    if (ev.key === 'Escape' && !$('overlay').hidden) closeEditor();
+    const c = ev.target.closest && ev.target.closest('.chip');
+    if (c && (ev.key === 'Enter' || ev.key === ' ') && ev.target === c) { ev.preventDefault(); openEditor(c.dataset.id); }
+  });
+
+  // ---------- edycja ----------
+  let editing = null, delArmed = null;
+  const sel = $('f-cat');
+  for (const [k, v] of Object.entries(CATS)) { const o = el('option', null, v.label); o.value = k; sel.append(o); }
+  function openEditor(id, preset) {
+    const b = id ? blocks.get(id) : Object.assign({ title: '', cat: 'praca', date: null, note: '', done: false, tpl: false }, preset || {});
+    if (!b) return;
+    editing = id;
+    $('sheet-title').textContent = id ? 'Edytuj klocek' : 'Nowy klocek';
+    $('f-title').value = b.title || ''; sel.value = catOf(b); $('f-later').checked = !!b.later;
+    $('f-date').value = b.date || ''; $('f-note').value = b.note || '';
+    $('f-done').checked = !!b.done; $('f-tpl').checked = !!b.tpl; $('f-info').checked = !!b.info;
+    $('f-del').hidden = !id; $('f-dup').hidden = !id;
+    disarm();
+    $('overlay').hidden = false; setTimeout(() => $('f-title').focus(), 0);
+  }
+  function closeEditor() { $('overlay').hidden = true; editing = null; disarm(); }
+  function disarm() { clearTimeout(delArmed); delArmed = null; $('f-del').textContent = 'Usuń'; }
+  function formData() {
+    const info = $('f-info').checked, tpl = !info && $('f-tpl').checked;
+    return { later: $('f-later').checked, title: $('f-title').value.trim(), cat: sel.value, date: (tpl || info) ? null : ($('f-date').value || null), note: $('f-note').value.trim(), done: (tpl || info) ? false : $('f-done').checked, tpl, info };
+  }
+  $('sheet').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const d = formData(); if (!d.title) return;
+    if (editing) {
+      const prev = blocks.get(editing);
+      if (prev && prev.date !== d.date) d.order = Date.now();
+      write(editing, d);
+    } else create(d);
+    closeEditor(); toast('Zapisano');
+  });
+  $('f-cancel').addEventListener('click', closeEditor);
+  $('overlay').addEventListener('click', ev => { if (ev.target === $('overlay')) closeEditor(); });
+  $('f-dup').addEventListener('click', () => { const d = formData(); if (!d.title) return; create(Object.assign(d, { done: false, tpl: false })); closeEditor(); toast('Zduplikowano'); });
+  $('f-del').addEventListener('click', () => {
+    if (!delArmed) { $('f-del').textContent = 'Kliknij jeszcze raz, żeby usunąć'; delArmed = setTimeout(disarm, 3500); return; }
+    const id = editing; closeEditor(); remove(id); toast('Usunięto');
+  });
+
+  // ---------- nawigacja ----------
+  $('prev').addEventListener('click', () => { anchor = view === 'week' ? addDays(anchor, -7) : new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1); render(); });
+  $('next').addEventListener('click', () => { anchor = view === 'week' ? addDays(anchor, 7) : new Date(anchor.getFullYear(), anchor.getMonth() + 1, 1); render(); });
+  $('today').addEventListener('click', () => { anchor = new Date(); render(); });
+  $('v-week').addEventListener('click', () => { view = 'week'; store('kal-view', view); render(); });
+  $('v-month').addEventListener('click', () => { view = 'month'; store('kal-view', view); render(); });
+  $('new').addEventListener('click', () => openEditor(null, { date: null }));
+
+  let toastT = null;
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2200); }
+
+  // ---------- start ----------
+  function showConnect(msg) {
+    token = null; store(TKEY, null);
+    $('mainview').hidden = true; $('connect').hidden = false;
+    $('c-err').hidden = !msg; $('c-err').textContent = msg || '';
+    setTimeout(() => $('c-token').focus(), 0);
+  }
+  $('connect').addEventListener('submit', async ev => {
+    ev.preventDefault();
+    token = $('c-token').value.trim();
+    try {
+      const fresh = await fetchBlocks();
+      store(TKEY, token); $('c-token').value = '';
+      sha = fresh.sha; blocks = fresh.map; loaded = true;
+      await fetchGoogle();
+      $('connect').hidden = true; $('mainview').hidden = false; render(); toast('Połączono');
+    } catch (e) {
+      $('c-err').hidden = false;
+      $('c-err').textContent = e.code === 'auth' ? 'Ten klucz nie działa. Sprawdź, czy ma dostęp do repozytorium „kalendarz”.' : 'Nie udało się połączyć. Sprawdź internet.';
+      token = null;
+    }
+  });
+  render();
+  if (!token) showConnect(); else refresh();
+  setInterval(refresh, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+})();
+</script>
+</body>
+</html>
