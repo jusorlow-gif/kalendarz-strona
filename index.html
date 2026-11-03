@@ -171,6 +171,7 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
 .gchip { display: block; width: 100%; text-align: left; border: 1px solid var(--c-google-line); border-radius: 8px; padding: 5px 8px; font-size: 12px; line-height: 1.3; background: none; color: var(--c-google-fg); overflow-wrap: anywhere; }
 .gchip .gt { font-variant-numeric: tabular-nums; font-weight: 600; margin-right: 4px; }
 .mday .gchip { font-size: 11px; padding: 3px 6px; }
+.chip.c-google { background: none; color: var(--c-google-fg); border-color: var(--c-google-line); }
 /* wpisy z telefonu, które są przyjemnością (joga, spektakl, wyzwanie…) — zielone jak „Przyjemności” */
 .gchip.g-fun { background: #DDEBE3; color: #1B4634; border-color: #B9D5C5; }
 .chip.dragging { opacity: .3; }
@@ -414,7 +415,8 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
     const m = new Map();
     // wpisy z telefonu, których nie pokazuję (np. faktury do startupu — nieaktualne od 3.11)
     const HIDE = /faktury na obni/i;
-    for (const g of gevents) { if (HIDE.test(g.title || '')) continue; if (!m.has(g.date)) m.set(g.date, []); m.get(g.date).push(g); }
+    const ticked = new Set([...blocks.values()].map(b => b.gkey).filter(Boolean));
+    for (const g of gevents) { if (HIDE.test(g.title || '') || ticked.has(gkey(g))) continue; if (!m.has(g.date)) m.set(g.date, []); m.get(g.date).push(g); }
     for (const l of m.values()) l.sort((a, b) => (a.time || '') < (b.time || '') ? -1 : 1);
     return m;
   }
@@ -434,11 +436,17 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
     if (b.tpl) c.append(el('span', 'tpl', '⧉'));
     return c;
   }
+  // wpis z telefonu wygląda jak zwykły klocek; odhaczenie zamienia go w klocek „zrobione” (pole gkey), a wpis z Google znika
+  const gkey = g => g.date + '|' + (g.title || '');
   function gchip(g) {
-    const c = el('div', 'gchip' + (FUN.test(g.title || '') ? ' g-fun' : ''));
+    const fun = FUN.test(g.title || '');
+    const c = el('div', 'chip ' + (fun ? 'c-przyjemnosci' : 'c-google'));
     c.title = 'Z Kalendarza Google' + (g.where ? ' · ' + g.where : '');
+    const t = el('button', 'tick', '');
+    t.type = 'button'; t.setAttribute('aria-label', 'Oznacz jako zrobione');
+    t.addEventListener('click', ev => { ev.stopPropagation(); create({ title: g.title || 'Wydarzenie', cat: fun ? 'przyjemnosci' : 'projekty', date: g.date, done: true, gkey: gkey(g) }); });
     // godzina z Google to tylko pora powiadomienia w telefonie — nie pokazuję jej; prawdziwą godzinę wpisuje w tytule
-    c.append(document.createTextNode(g.title || 'Wydarzenie'));
+    c.append(t, el('span', 't', g.title || 'Wydarzenie'));
     return c;
   }
   // dzień w trzech częściach: jej zadania (od najważniejszego) · przyjemności · na dole zadania asystenta
@@ -611,7 +619,7 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
     hoverEl = null; drag = null;
   }
   document.addEventListener('pointerdown', ev => {
-    const c = ev.target.closest('.chip'); if (!c || c.classList.contains('ghost') || ev.button > 0) return;
+    const c = ev.target.closest('.chip[data-id]'); if (!c || c.classList.contains('ghost') || ev.button > 0) return;
     drag = { id: c.dataset.id, el: c, x: ev.clientX, y: ev.clientY, active: false, touch: ev.pointerType !== 'mouse' };
     if (drag.touch) drag.timer = setTimeout(() => { if (drag && !drag.active) { startDrag(); navigator.vibrate && navigator.vibrate(15); } }, 280);
   });
@@ -631,12 +639,12 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
   document.addEventListener('pointercancel', () => { if (drag && drag.active) return; endDrag(true); });
   document.addEventListener('contextmenu', ev => { if (drag && drag.active) ev.preventDefault(); });
   document.addEventListener('click', ev => {
-    const c = ev.target.closest('.chip'); if (!c || justDragged) return;
+    const c = ev.target.closest('.chip[data-id]'); if (!c || justDragged) return;
     openEditor(c.dataset.id);
   });
   document.addEventListener('keydown', ev => {
     if (ev.key === 'Escape' && !$('overlay').hidden) closeEditor();
-    const c = ev.target.closest && ev.target.closest('.chip');
+    const c = ev.target.closest && ev.target.closest('.chip[data-id]');
     if (c && (ev.key === 'Enter' || ev.key === ' ') && ev.target === c) { ev.preventDefault(); openEditor(c.dataset.id); }
   });
 
