@@ -160,6 +160,10 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
 .c-projekty { background: #F3E3E7; color: #731330; }
 .c-social { background: #E2EAF5; color: #2E4A72; }
 .c-asystent { background: #ECEAE7; color: #5F5650; }
+.day .chip.c-asystent { font-size: 11.5px; padding: 4px 8px; }
+/* przerwa między częściami dnia: zadania · dla siebie · asystent */
+.sep { margin-top: 8px; font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--line); padding: 6px 2px 0; }
+.mday .sep { margin-top: 3px; padding-top: 2px; font-size: 0; }
 .c-przyjemnosci { background: #DDEBE3; color: #1B4634; }
 /* pomysł – można przełożyć: blady, przerywana ramka */
 .chip.later { opacity: .72; border: 1px dashed currentColor; }
@@ -435,9 +439,22 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
     c.append(document.createTextNode(g.title || 'Wydarzenie'));
     return c;
   }
+  // dzień w trzech częściach: jej zadania (od najważniejszego) · przyjemności · na dole zadania asystenta
   function fillList(list, items, gitems) {
-    for (const g of gitems || []) list.append(gchip(g));
-    for (const b of items) list.append(chip(b));
+    const fun = (gitems || []).filter(g => FUN.test(g.title || ''));
+    for (const g of gitems || []) if (!fun.includes(g)) list.append(gchip(g));
+    for (const b of items) if (!['przyjemnosci', 'asystent'].includes(catOf(b))) list.append(chip(b));
+    const mine = items.filter(b => catOf(b) === 'przyjemnosci');
+    if (fun.length || mine.length) {
+      list.append(el('div', 'sep', '🌿 dla siebie'));
+      for (const g of fun) list.append(gchip(g));
+      for (const b of mine) list.append(chip(b));
+    }
+    const bot = items.filter(b => catOf(b) === 'asystent');
+    if (bot.length) {
+      list.append(el('div', 'sep', '🤖 robi asystent'));
+      for (const b of bot) list.append(chip(b));
+    }
   }
   function renderWeek(root, map, gmap) {
     const start = monday(anchor), todayIso = iso(new Date());
