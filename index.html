@@ -412,7 +412,9 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
   }
   function gByDate() {
     const m = new Map();
-    for (const g of gevents) { if (!m.has(g.date)) m.set(g.date, []); m.get(g.date).push(g); }
+    // wpisy z telefonu, których nie pokazuję (np. faktury do startupu — nieaktualne od 3.11)
+    const HIDE = /faktury na obni/i;
+    for (const g of gevents) { if (HIDE.test(g.title || '')) continue; if (!m.has(g.date)) m.set(g.date, []); m.get(g.date).push(g); }
     for (const l of m.values()) l.sort((a, b) => (a.time || '') < (b.time || '') ? -1 : 1);
     return m;
   }
