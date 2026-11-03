@@ -525,6 +525,16 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
     const box = el('div', 'droplist'); box.dataset.drop = '';
     box.style.gap = '16px'; box.style.padding = '2px';
     let any = false;
+    // „kiedyś”: zadania bez daty, warte zapamiętania (pomysł – można przełożyć); przeciągasz na dzień, gdy przyjdzie pora
+    const someday = sorted(loose.filter(b => b.later));
+    if (someday.length) {
+      any = true;
+      const g = el('div', 'group');
+      g.append(el('h3', null, '💭 Warto pamiętać · kiedyś'));
+      someday.forEach(b => g.append(chip(b)));
+      box.append(g);
+    }
+    loose.splice(0, loose.length, ...loose.filter(b => !b.later));
     for (const k of Object.keys(CATS)) {
       const items = sorted(loose.filter(b => catOf(b) === k));
       if (!items.length) continue;
