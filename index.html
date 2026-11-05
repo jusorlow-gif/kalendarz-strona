@@ -468,7 +468,19 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
     t.addEventListener('click', ev => { ev.stopPropagation(); create({ title: g.title || 'Wydarzenie', cat: fun ? 'przyjemnosci' : 'projekty', date: g.date, done: true, gkey: gkey(g) }); });
     // godzina z Google to tylko pora powiadomienia w telefonie — nie pokazuję jej; prawdziwą godzinę wpisuje w tytule
     c.append(t, el('span', 't', g.title || 'Wydarzenie'));
+    // wpis z telefonu można przeciągnąć albo edytować: wtedy staje się zwykłym klockiem (pole gkey), a wpis z Google znika
+    c.dataset.gid = gkey(g); gById.set(gkey(g), g);
+    const acts = el('span', 'acts');
+    const ed = el('button', 'act', '✏️'); ed.type = 'button'; ed.title = 'Edytuj'; ed.setAttribute('aria-label', 'Edytuj wpis');
+    ed.addEventListener('click', ev => { ev.stopPropagation(); openEditor(adoptG(g)); });
+    ed.addEventListener('pointerdown', ev => ev.stopPropagation());
+    acts.append(ed); c.append(acts);
     return c;
+  }
+  const gById = new Map();
+  function adoptG(g, date) {
+    const fun = FUN.test(g.title || '');
+    return create({ title: g.title || 'Wydarzenie', cat: fun ? 'przyjemnosci' : 'projekty', date: date === undefined ? g.date : date, gkey: gkey(g) });
   }
   // dzień w trzech częściach: jej zadania (od najważniejszego) · przyjemności · na dole zadania asystenta
   function fillList(list, items, gitems) {
@@ -630,7 +642,9 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
       hoverEl && hoverEl.classList.remove('drop-hover');
       if (!cancel && hoverEl) {
         const b = blocks.get(drag.id), date = hoverEl.dataset.drop || null;
-        if (b) {
+        const g = drag.gid && gById.get(drag.gid);
+        if (g && date !== g.date) { adoptG(g, date); toast('Przeniesiono: ' + (g.title || 'wpis')); }
+        else if (b) {
           if (b.tpl) { if (date) { create({ title: b.title, cat: b.cat, note: b.note || '', date }); toast('Dodano: ' + b.title); } }
           else if (b.date !== date) write(b.id, { date, order: Date.now() });
         }
@@ -640,8 +654,8 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
     hoverEl = null; drag = null;
   }
   document.addEventListener('pointerdown', ev => {
-    const c = ev.target.closest('.chip[data-id]'); if (!c || c.classList.contains('ghost') || ev.button > 0) return;
-    drag = { id: c.dataset.id, el: c, x: ev.clientX, y: ev.clientY, active: false, touch: ev.pointerType !== 'mouse' };
+    const c = ev.target.closest('.chip[data-id], .chip[data-gid]'); if (!c || c.classList.contains('ghost') || ev.button > 0) return;
+    drag = { id: c.dataset.id, gid: c.dataset.gid, el: c, x: ev.clientX, y: ev.clientY, active: false, touch: ev.pointerType !== 'mouse' };
     if (drag.touch) drag.timer = setTimeout(() => { if (drag && !drag.active) { startDrag(); navigator.vibrate && navigator.vibrate(15); } }, 280);
   });
   document.addEventListener('pointermove', ev => {
@@ -660,7 +674,8 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
   document.addEventListener('pointercancel', () => { if (drag && drag.active) return; endDrag(true); });
   document.addEventListener('contextmenu', ev => { if (drag && drag.active) ev.preventDefault(); });
   document.addEventListener('click', ev => {
-    const c = ev.target.closest('.chip[data-id]'); if (!c || justDragged) return;
+    const c = ev.target.closest('.chip[data-id], .chip[data-gid]'); if (!c || justDragged) return;
+    if (c.dataset.gid) { const g = gById.get(c.dataset.gid); if (g) openEditor(adoptG(g)); return; }
     openEditor(c.dataset.id);
   });
   document.addEventListener('keydown', ev => {
