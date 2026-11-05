@@ -175,6 +175,15 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
 /* wpisy z telefonu, które są przyjemnością (joga, spektakl, wyzwanie…) — zielone jak „Przyjemności” */
 .gchip.g-fun { background: #DDEBE3; color: #1B4634; border-color: #B9D5C5; }
 .chip.dragging { opacity: .3; }
+/* ikonki na klocku po najechaniu: edytuj i usuń (usuń wymaga drugiego kliknięcia) */
+.chip .acts { position: absolute; top: 3px; right: 3px; display: flex; gap: 2px; opacity: 0; pointer-events: none; transition: opacity .15s ease; }
+.chip:hover .acts, .chip:focus-within .acts { opacity: 1; pointer-events: auto; }
+.chip .act { border: 0; border-radius: 6px; padding: 2px 5px; font-size: 12px; line-height: 1.2; cursor: pointer; background: #FFFFFF; color: #33251F; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+.chip .act:hover { background: #F3E3E7; }
+.chip .act.armed { background: #731330; color: #FFFFFF; font-size: 11px; font-weight: 600; }
+.chip:hover .t { padding-right: 46px; }
+.mday .chip .act { font-size: 10px; padding: 1px 3px; }
+@media (hover: none) { .chip .acts { opacity: 1; pointer-events: auto; } .chip .t { padding-right: 46px; } }
 /* karty z boku: informacje do wglądu, bez odhaczania */
 .icard { display: grid; gap: 4px; width: 100%; text-align: left; border: 1px solid var(--line); border-left: 4px solid var(--muted); border-radius: 8px; padding: 8px 10px; background: var(--bg); color: var(--text); }
 .icard:hover { border-color: var(--accent); }
@@ -434,6 +443,18 @@ h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 3vw, 36
     const tx = el('span', 't', (b.later ? '💭 ' : '') + (b.title || 'Bez nazwy'));
     c.append(tx);
     if (b.tpl) c.append(el('span', 'tpl', '⧉'));
+    const acts = el('span', 'acts');
+    const ed = el('button', 'act', '✏️'); ed.type = 'button'; ed.title = 'Edytuj'; ed.setAttribute('aria-label', 'Edytuj klocek');
+    ed.addEventListener('click', ev => { ev.stopPropagation(); openEditor(b.id); });
+    const del = el('button', 'act', '🗑️'); del.type = 'button'; del.title = 'Usuń'; del.setAttribute('aria-label', 'Usuń klocek');
+    let armT = null;
+    del.addEventListener('click', ev => {
+      ev.stopPropagation();
+      if (!armT) { del.textContent = 'Usuń?'; del.classList.add('armed'); armT = setTimeout(() => { armT = null; del.textContent = '🗑️'; del.classList.remove('armed'); }, 3000); return; }
+      clearTimeout(armT); remove(b.id); toast('Usunięto: ' + (b.title || 'klocek'));
+    });
+    for (const x of [ed, del]) x.addEventListener('pointerdown', ev => ev.stopPropagation());
+    acts.append(ed, del); c.append(acts);
     return c;
   }
   // wpis z telefonu wygląda jak zwykły klocek; odhaczenie zamienia go w klocek „zrobione” (pole gkey), a wpis z Google znika
